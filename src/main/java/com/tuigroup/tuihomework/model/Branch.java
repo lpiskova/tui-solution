@@ -1,16 +1,16 @@
 package com.tuigroup.tuihomework.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class GithubUser {
+public class Branch {
 
-    private String id;
+    private String name;
+
+    private Commit commit;
 
 }

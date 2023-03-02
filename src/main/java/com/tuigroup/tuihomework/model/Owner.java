@@ -1,20 +1,14 @@
 package com.tuigroup.tuihomework.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class GithubRepository {
+public class Owner {
 
-    private String name;
-
-    private GithubOwner owner;
-
-    private boolean fork;
+    private String login;
 
 }

@@ -1,16 +1,16 @@
-package com.tuigroup.tuihomework.model;
+package com.tuigroup.tuihomework.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class GithubOwner {
+public class BranchDto {
 
-    private String login;
+    private String name;
+
+    private String lastCommitSha;
 
 }

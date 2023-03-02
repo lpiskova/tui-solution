@@ -1,12 +1,12 @@
 package com.tuigroup.tuihomework.client;
 
-import com.tuigroup.tuihomework.exception.UserNotFoundException;
-import com.tuigroup.tuihomework.model.GithubBranch;
-import com.tuigroup.tuihomework.model.GithubRepository;
-import com.tuigroup.tuihomework.model.GithubUser;
+import com.tuigroup.tuihomework.model.Branch;
+import com.tuigroup.tuihomework.model.Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,98 +14,80 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class GithubClient {
-    private static final String REPOS = "repos";
-    private static final String BRANCHES = "branches";
-    private static final String USERS = "users";
-    private static final String USER = "user";
-    private static final String HEADER_VALUE_SEPARATOR = ";";
-    private static final String PAGE = "page";
+    public static final String USERS_USER_REPOS_URL = "/users/{user}/repos";
+    public static final String REPOS_USER_REPOSITORY_BRANCHES_URL = "/repos/{user}/{repository}/branches";
+    private static final String NO_URL = "";
+    private static final String PAGE_REQUEST_PARAM = "page";
     private static final String INITIAL_PAGE = "1";
     private static final String PER_PAGE_REQUEST_PARAM = "per_page";
-    public static final String NO_URL = "";
+    private static final String LINK_HEADER = "Link";
+    private static final String NEXT_PAGE_HEADER_LINK_INDICATOR = "rel=\"next\"";
+    private static final String HEADER_VALUE_SEPARATOR = ";";
+
     private final RestTemplate restTemplate;
-    @Value("${github.url}")
-    private String githubUrl;
+
     @Value("${github.params.perPage}")
     private Integer perPage;
-    @Value("${github.header}")
-    private String header;
 
-    public List<GithubRepository> getUserRepositories(String user) {
-        List<GithubRepository> result = new ArrayList<>();
+    public List<Repository> getUserRepositories(String user) {
+        List<Repository> result = new ArrayList<>();
+        String nextUrl = getFirstPageUrl(user);
 
-        getUserId(user).ifPresent(userId -> {
-            String nextUrl = githubUrlWithParams(USER, userId, REPOS);
-            do {
-                ResponseEntity<GithubRepository[]> response = restTemplate.getForEntity(nextUrl, GithubRepository[].class);
-                nextUrl = getNextUrl(getHeaderValueWithNextUrl(response)).orElse(NO_URL);
-                result.addAll(Arrays.asList(response.getBody()));
-            } while (!nextUrl.equals(NO_URL));
-        });
+        do {
+            ResponseEntity<List<Repository>> response = restTemplate.exchange(
+                    nextUrl,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<>() {
+                    }
+            );
+            nextUrl = getNextPageUrl(response.getHeaders());
+            if (response.getBody() != null)
+                result.addAll(response.getBody());
+        } while (!nextUrl.equals(NO_URL));
 
         return result;
     }
 
-    public List<GithubBranch> getUserRepositoryBranches(String user, String repository) {
-        ResponseEntity<GithubBranch[]> response = restTemplate
-                .getForEntity(githubUrl(REPOS, user, repository, BRANCHES), GithubBranch[].class);
-        return Arrays.asList(response.getBody());
+    public List<Branch> getUserRepositoryBranches(String user, String repository) {
+        ResponseEntity<List<Branch>> response = restTemplate.exchange(
+                REPOS_USER_REPOSITORY_BRANCHES_URL,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {
+                },
+                user,
+                repository
+        );
+        return response.getBody();
     }
 
-    private Optional<String> getUserId(String user) {
-        try {
-            String githubUserId = restTemplate.getForEntity(githubUrl(USERS, user), GithubUser.class)
-                    .getBody()
-                    .getId();
-            return Optional.ofNullable(githubUserId).filter(Predicate.not(String::isEmpty));
-        } catch (Exception e) {
-            if (e.getMessage().contains(HttpStatus.NOT_FOUND.getReasonPhrase()))
-                throw new UserNotFoundException();
-            throw e;
-        }
-    }
-
-    private Optional<String> getHeaderValueWithNextUrl(ResponseEntity<GithubRepository[]> response) {
-        return response.getHeaders().getValuesAsList(header)
-                .stream()
-                .flatMap(Stream::ofNullable)
-                .filter(headerValue -> headerValue.contains("rel=\"next\""))
-                .findFirst();
-    }
-
-    private Optional<String> getNextUrl(Optional<String> from) {
-        return from
-                .map(headerValue -> headerValue.split(HEADER_VALUE_SEPARATOR)[0])
-                .stream()
-                .flatMap(Stream::ofNullable)
-                .map(headerValue -> headerValue.substring(1, headerValue.length() - 1))
-                .filter(GithubClient::isValidURL)
-                .findFirst();
-    }
-
-    private String githubUrl(String... pathSegments) {
-        return UriComponentsBuilder.fromUriString(githubUrl)
-                .pathSegment(pathSegments)
-                .build()
-                .toUriString();
-    }
-
-    private String githubUrlWithParams(String... pathSegments) {
-        return UriComponentsBuilder.fromUriString(githubUrl)
-                .pathSegment(pathSegments)
+    String getFirstPageUrl(String user) {
+        return UriComponentsBuilder.fromUriString(USERS_USER_REPOS_URL)
                 .queryParam(PER_PAGE_REQUEST_PARAM, perPage)
-                .queryParam(PAGE, INITIAL_PAGE)
-                .build()
+                .queryParam(PAGE_REQUEST_PARAM, INITIAL_PAGE)
+                .buildAndExpand(user)
                 .toUriString();
+    }
+
+
+    private String getNextPageUrl(HttpHeaders headers) {
+        try {
+            List<String> headerValues = headers.getValuesAsList(LINK_HEADER);
+            headerValues.removeIf(headerValue -> !headerValue.contains(NEXT_PAGE_HEADER_LINK_INDICATOR));
+            String nextPageLinkHeaderValue = headerValues.get(0).split(HEADER_VALUE_SEPARATOR)[0];
+            String nextPageUrl = nextPageLinkHeaderValue.substring(1, nextPageLinkHeaderValue.length() - 1);
+            if (isValidURL(nextPageUrl))
+                return nextPageUrl;
+        } catch (Exception e) {
+            return NO_URL;
+        }
+        return NO_URL;
     }
 
     private static boolean isValidURL(String urlString) {

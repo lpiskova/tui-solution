@@ -1,22 +1,20 @@
-package com.tuigroup.tuihomework.view;
+package com.tuigroup.tuihomework.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class Repository {
+public class RepositoryDto {
 
     private String name;
 
     private String ownerLogin;
 
-    private List<Branch> branches;
+    private List<BranchDto> branches;
 
 }

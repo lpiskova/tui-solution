@@ -1,6 +1,7 @@
-application-description: REST API to manage Github repositories
-application-title: TUI Homework API
-application-version: 0.0.1
+application:
+  description: REST API to manage Github repositories
+  title: TUI Homework API
+  version: 0.0.1
 error:
   message:
     notAcceptable: Not acceptable request

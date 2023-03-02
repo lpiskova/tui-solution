@@ -5,7 +5,7 @@
 The application provides the HTTP endpoint which accepts username and header “Accept: application/json”. 
 
 ```
-GET /repos/{username}
+GET /users/{username}/repositories
 ```
 
 The endpoint returns all Github repositories of the given user which are not forks.
