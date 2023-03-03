@@ -17,7 +17,7 @@ public class GithubRepositoryService implements RepositoryService {
 
     @Override
     public List<Repository> getNotForkRepositories(String user) {
-        return getRepositories(user, repository -> !repository.isFork());
+        return getRepositories(user, Predicate.not(Repository::isFork));
     }
 
     @Override

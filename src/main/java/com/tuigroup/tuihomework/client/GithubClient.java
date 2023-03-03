@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,11 +23,11 @@ public class GithubClient {
     public static final String USERS_USER_REPOS_URL = "/users/{user}/repos";
     public static final String REPOS_USER_REPOSITORY_BRANCHES_URL = "/repos/{user}/{repository}/branches";
     private static final String NO_URL = "";
-    private static final String PAGE_REQUEST_PARAM = "page";
+    public static final String PAGE_REQUEST_PARAM = "page";
+    public static final String PER_PAGE_REQUEST_PARAM = "per_page";
     private static final String INITIAL_PAGE = "1";
-    private static final String PER_PAGE_REQUEST_PARAM = "per_page";
-    private static final String LINK_HEADER = "Link";
-    private static final String NEXT_PAGE_HEADER_LINK_INDICATOR = "rel=\"next\"";
+    private static final String HEADER = "Link";
+    private static final String HEADER_NEXT_PAGE_INDICATOR = "rel=\"next\"";
     private static final String HEADER_VALUE_SEPARATOR = ";";
 
     private final RestTemplate restTemplate;
@@ -47,8 +48,7 @@ public class GithubClient {
                     }
             );
             nextUrl = getNextPageUrl(response.getHeaders());
-            if (response.getBody() != null)
-                result.addAll(response.getBody());
+            Optional.ofNullable(response.getBody()).map(result::addAll);
         } while (!nextUrl.equals(NO_URL));
 
         return result;
@@ -67,7 +67,7 @@ public class GithubClient {
         return response.getBody();
     }
 
-    String getFirstPageUrl(String user) {
+    private String getFirstPageUrl(String user) {
         return UriComponentsBuilder.fromUriString(USERS_USER_REPOS_URL)
                 .queryParam(PER_PAGE_REQUEST_PARAM, perPage)
                 .queryParam(PAGE_REQUEST_PARAM, INITIAL_PAGE)
@@ -78,8 +78,8 @@ public class GithubClient {
 
     private String getNextPageUrl(HttpHeaders headers) {
         try {
-            List<String> headerValues = headers.getValuesAsList(LINK_HEADER);
-            headerValues.removeIf(headerValue -> !headerValue.contains(NEXT_PAGE_HEADER_LINK_INDICATOR));
+            List<String> headerValues = headers.getValuesAsList(HEADER);
+            headerValues.removeIf(headerValue -> !headerValue.contains(HEADER_NEXT_PAGE_INDICATOR));
             String nextPageLinkHeaderValue = headerValues.get(0).split(HEADER_VALUE_SEPARATOR)[0];
             String nextPageUrl = nextPageLinkHeaderValue.substring(1, nextPageLinkHeaderValue.length() - 1);
             if (isValidURL(nextPageUrl))

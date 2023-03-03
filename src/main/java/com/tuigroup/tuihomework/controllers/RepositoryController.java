@@ -1,11 +1,12 @@
 package com.tuigroup.tuihomework.controllers;
 
-import com.tuigroup.tuihomework.model.Branch;
-import com.tuigroup.tuihomework.services.BranchService;
-import com.tuigroup.tuihomework.services.RepositoryService;
 import com.tuigroup.tuihomework.dto.ErrorMessage;
 import com.tuigroup.tuihomework.dto.RepositoryDto;
+import com.tuigroup.tuihomework.model.Branch;
+import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.services.BranchService;
 import com.tuigroup.tuihomework.services.RepositoryMapper;
+import com.tuigroup.tuihomework.services.RepositoryService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -38,10 +40,17 @@ public class RepositoryController {
             @ApiResponse(responseCode = "404", description = "Username not found",
                     content = {@Content(schema = @Schema(implementation = ErrorMessage.class))}),
             @ApiResponse(responseCode = "406", description = "Not acceptable content type supplied",
-                    content = {@Content(schema = @Schema(implementation = ErrorMessage.class))})}
-    )
-    public List<RepositoryDto> retrieveReposByUser(@PathVariable("username") String user) {
-        return repositoryService.getNotForkRepositories(user)
+                    content = {@Content(schema = @Schema(implementation = ErrorMessage.class))})
+    })
+    public List<RepositoryDto> retrieveReposByUser(@PathVariable("username") String user,
+                                                   @RequestParam(required = false, defaultValue = "false") boolean fork) {
+        List<Repository> repositories;
+        if (!fork)
+            repositories = repositoryService.getNotForkRepositories(user);
+        else
+            repositories = repositoryService.getRepositories(user, Repository::isFork);
+
+        return repositories
                 .parallelStream()
                 .map(repository -> {
                     List<Branch> branches = branchService.getBranches(user, repository.getName());

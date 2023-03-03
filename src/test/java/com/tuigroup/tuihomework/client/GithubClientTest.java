@@ -42,6 +42,9 @@ public class GithubClientTest {
     @Value("${github.url}")
     private String baseUrl;
 
+    @Value("${github.params.perPage}")
+    private Integer perPage;
+
     private GithubClient githubClient;
 
     private MockRestServiceServer server;
@@ -49,6 +52,13 @@ public class GithubClientTest {
     private final String user = "xyuvwz";
 
     private final String repository = "repo";
+
+    private final String repoUrl = UriComponentsBuilder
+            .fromUriString(GithubClient.USERS_USER_REPOS_URL)
+            .queryParam(GithubClient.PER_PAGE_REQUEST_PARAM, perPage)
+            .queryParam(GithubClient.PAGE_REQUEST_PARAM, "1")
+            .buildAndExpand(user)
+            .toUriString();
 
     private final String branchUrl = UriComponentsBuilder
             .fromUriString(GithubClient.REPOS_USER_REPOSITORY_BRANCHES_URL)
@@ -66,8 +76,7 @@ public class GithubClientTest {
         Repository repository = new Repository("repo", new Owner(user), false);
         String payload = objectMapper.writeValueAsString(List.of(repository));
         server.expect(method(HttpMethod.GET))
-                .andExpect(requestTo(baseUrl + githubClient.getFirstPageUrl(user)))
-                .andExpect(queryParam("page", "1"))
+                .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
         List<Repository> result = githubClient.getUserRepositories(user);
@@ -81,7 +90,7 @@ public class GithubClientTest {
     public void getUserRepositories_successWithNoRepositories() throws JsonProcessingException {
         String payload = objectMapper.writeValueAsString(List.of());
         server.expect(method(HttpMethod.GET))
-                .andExpect(requestTo(baseUrl + githubClient.getFirstPageUrl(user)))
+                .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
         List<Repository> result = githubClient.getUserRepositories(user);
@@ -91,7 +100,7 @@ public class GithubClientTest {
     @Test
     public void getUserRepositories_failureWithNotFound() {
         server.expect(method(HttpMethod.GET))
-                .andExpect(requestTo(baseUrl + githubClient.getFirstPageUrl(user)))
+                .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withResourceNotFound());
 
         assertThrows(HttpClientErrorException.NotFound.class, () -> githubClient.getUserRepositories(user));
