@@ -3,7 +3,6 @@ package com.tuigroup.tuihomework.client;
 import com.tuigroup.tuihomework.model.Branch;
 import com.tuigroup.tuihomework.model.Repository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,19 +24,15 @@ public class GithubClient {
     private static final String NO_URL = "";
     public static final String PAGE_REQUEST_PARAM = "page";
     public static final String PER_PAGE_REQUEST_PARAM = "per_page";
-    private static final String INITIAL_PAGE = "1";
     private static final String HEADER = "Link";
     private static final String HEADER_NEXT_PAGE_INDICATOR = "rel=\"next\"";
     private static final String HEADER_VALUE_SEPARATOR = ";";
 
     private final RestTemplate restTemplate;
 
-    @Value("${github.params.perPage}")
-    private Integer perPage;
-
-    public List<Repository> getUserRepositories(String user) {
+    public List<Repository> getUserRepositories(String user, int fromPage, int perPage) {
         List<Repository> result = new ArrayList<>();
-        String nextUrl = getFirstPageUrl(user);
+        String nextUrl = getFirstPageUrl(user, fromPage, perPage);
 
         do {
             ResponseEntity<List<Repository>> response = restTemplate.exchange(
@@ -67,10 +62,10 @@ public class GithubClient {
         return response.getBody();
     }
 
-    private String getFirstPageUrl(String user) {
+    private String getFirstPageUrl(String user, int fromPage, int perPage) {
         return UriComponentsBuilder.fromUriString(USERS_USER_REPOS_URL)
                 .queryParam(PER_PAGE_REQUEST_PARAM, perPage)
-                .queryParam(PAGE_REQUEST_PARAM, INITIAL_PAGE)
+                .queryParam(PAGE_REQUEST_PARAM, fromPage)
                 .buildAndExpand(user)
                 .toUriString();
     }

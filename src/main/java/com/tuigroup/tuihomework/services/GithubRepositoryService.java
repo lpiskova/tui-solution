@@ -3,6 +3,7 @@ package com.tuigroup.tuihomework.services;
 import com.tuigroup.tuihomework.client.GithubClient;
 import com.tuigroup.tuihomework.model.Repository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GithubRepositoryService implements RepositoryService {
 
+    private static final int FROM_PAGE = 1;
+
+    @Value("${github.params.perPage}")
+    private int perPage;
+
     private final GithubClient githubClient;
 
     @Override
@@ -22,7 +28,7 @@ public class GithubRepositoryService implements RepositoryService {
 
     @Override
     public List<Repository> getRepositories(String user, Predicate<Repository> predicate) {
-        return githubClient.getUserRepositories(user)
+        return githubClient.getUserRepositories(user, FROM_PAGE, perPage)
                 .stream()
                 .filter(predicate)
                 .collect(Collectors.toList());

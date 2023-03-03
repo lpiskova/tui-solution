@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -18,6 +19,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 public class RepositoryServiceTest {
+
+    private static final int FROM_PAGE = 1;
+
+    @Value("${github.params.perPage}")
+    private int perPage;
 
     @InjectMocks
     private GithubRepositoryService repositoryService;
@@ -36,13 +42,13 @@ public class RepositoryServiceTest {
                 new Repository("repo3", owner, false),
                 new Repository("repo4", owner, false));
 
-        Mockito.when(githubClient.getUserRepositories((user))).thenReturn(repositories);
+        Mockito.when(githubClient.getUserRepositories(user, FROM_PAGE, perPage)).thenReturn(repositories);
         assertEquals(3, repositoryService.getNotForkRepositories(user).size());
     }
 
     @Test
     public void getUserRepositories_successWithNoRepositories() {
-        Mockito.when(githubClient.getUserRepositories((user))).thenReturn(List.of());
+        Mockito.when(githubClient.getUserRepositories(user, FROM_PAGE, perPage)).thenReturn(List.of());
         assertEquals(0, repositoryService.getNotForkRepositories(user).size());
     }
 
@@ -52,7 +58,7 @@ public class RepositoryServiceTest {
         String repositoryName = "repo";
         List<Repository> repositories = List.of(new Repository(repositoryName, owner, false));
 
-        Mockito.when(githubClient.getUserRepositories((user))).thenReturn(repositories);
+        Mockito.when(githubClient.getUserRepositories(user, FROM_PAGE, perPage)).thenReturn(repositories);
 
         List<RepositoryDto> expected = List.of(new RepositoryDto(repositoryName, owner.getLogin(), List.of()));
         List<Repository> actual = repositoryService.getNotForkRepositories(user);
@@ -63,7 +69,7 @@ public class RepositoryServiceTest {
 
     @Test
     public void getUserRepositories_failure() {
-        Mockito.when(githubClient.getUserRepositories((user))).thenThrow(new RuntimeException("Error"));
+        Mockito.when(githubClient.getUserRepositories(user, FROM_PAGE, perPage)).thenThrow(new RuntimeException("Error"));
 
         assertThrows(RuntimeException.class, () -> repositoryService.getNotForkRepositories(user));
     }

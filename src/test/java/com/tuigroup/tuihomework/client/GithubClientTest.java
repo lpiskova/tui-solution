@@ -33,17 +33,19 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @Import(RestTemplateConfig.class)
 public class GithubClientTest {
 
+    private static final int FROM_PAGE = 1;
+
+    @Value("${github.params.perPage}")
+    private int perPage;
+
+    @Value("${github.url}")
+    private String baseUrl;
+
     @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Value("${github.url}")
-    private String baseUrl;
-
-    @Value("${github.params.perPage}")
-    private Integer perPage;
 
     private GithubClient githubClient;
 
@@ -56,7 +58,7 @@ public class GithubClientTest {
     private final String repoUrl = UriComponentsBuilder
             .fromUriString(GithubClient.USERS_USER_REPOS_URL)
             .queryParam(GithubClient.PER_PAGE_REQUEST_PARAM, perPage)
-            .queryParam(GithubClient.PAGE_REQUEST_PARAM, "1")
+            .queryParam(GithubClient.PAGE_REQUEST_PARAM, FROM_PAGE)
             .buildAndExpand(user)
             .toUriString();
 
@@ -79,7 +81,7 @@ public class GithubClientTest {
                 .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
-        List<Repository> result = githubClient.getUserRepositories(user);
+        List<Repository> result = githubClient.getUserRepositories(user, FROM_PAGE, perPage);
         assertThat(result.size()).isEqualTo(1);
         assertEquals(repository.getName(), result.get(0).getName());
         assertEquals(repository.getOwner().getLogin(), result.get(0).getOwner().getLogin());
@@ -93,7 +95,7 @@ public class GithubClientTest {
                 .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
-        List<Repository> result = githubClient.getUserRepositories(user);
+        List<Repository> result = githubClient.getUserRepositories(user, FROM_PAGE, perPage);
         assertThat(result.size()).isEqualTo(0);
     }
 
@@ -103,7 +105,7 @@ public class GithubClientTest {
                 .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withResourceNotFound());
 
-        assertThrows(HttpClientErrorException.NotFound.class, () -> githubClient.getUserRepositories(user));
+        assertThrows(HttpClientErrorException.NotFound.class, () -> githubClient.getUserRepositories(user, FROM_PAGE, perPage));
         server.verify();
     }
 
