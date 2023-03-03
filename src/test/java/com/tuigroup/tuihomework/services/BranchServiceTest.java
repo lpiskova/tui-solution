@@ -2,8 +2,8 @@ package com.tuigroup.tuihomework.services;
 
 import com.tuigroup.tuihomework.client.GithubClient;
 import com.tuigroup.tuihomework.dto.BranchDto;
-import com.tuigroup.tuihomework.model.Branch;
-import com.tuigroup.tuihomework.model.Commit;
+import com.tuigroup.tuihomework.client.model.Branch;
+import com.tuigroup.tuihomework.client.model.Commit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

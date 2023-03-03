@@ -1,7 +1,7 @@
 package com.tuigroup.tuihomework.services;
 
 import com.tuigroup.tuihomework.client.GithubClient;
-import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.client.model.Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

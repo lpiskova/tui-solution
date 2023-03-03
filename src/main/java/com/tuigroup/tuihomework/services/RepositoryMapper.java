@@ -2,8 +2,8 @@ package com.tuigroup.tuihomework.services;
 
 import com.tuigroup.tuihomework.dto.BranchDto;
 import com.tuigroup.tuihomework.dto.RepositoryDto;
-import com.tuigroup.tuihomework.model.Branch;
-import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.client.model.Branch;
+import com.tuigroup.tuihomework.client.model.Repository;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 

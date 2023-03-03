@@ -1,6 +1,6 @@
 package com.tuigroup.tuihomework.services;
 
-import com.tuigroup.tuihomework.model.Branch;
+import com.tuigroup.tuihomework.client.model.Branch;
 
 import java.util.List;
 

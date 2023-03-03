@@ -7,10 +7,9 @@ error:
     notAcceptable: Not acceptable request
     notFound: Github user not found
 github:
-    url: https://api.github.com
-    header: Link
-    params:
-      perPage: 100
+  url: https://api.github.com
+  params:
+    perPage: 100
 springdoc:
   api-docs:
     path: /api-docs

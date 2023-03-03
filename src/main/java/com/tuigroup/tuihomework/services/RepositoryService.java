@@ -1,6 +1,6 @@
 package com.tuigroup.tuihomework.services;
 
-import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.client.model.Repository;
 
 import java.util.List;
 import java.util.function.Predicate;

@@ -1,4 +1,4 @@
-package com.tuigroup.tuihomework.model;
+package com.tuigroup.tuihomework.client.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class Commit {
+public class Branch {
 
-    private String sha;
+    private String name;
+
+    private Commit commit;
 
 }

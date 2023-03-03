@@ -2,8 +2,8 @@ package com.tuigroup.tuihomework.controllers;
 
 import com.tuigroup.tuihomework.dto.ErrorMessage;
 import com.tuigroup.tuihomework.dto.RepositoryDto;
-import com.tuigroup.tuihomework.model.Branch;
-import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.client.model.Branch;
+import com.tuigroup.tuihomework.client.model.Repository;
 import com.tuigroup.tuihomework.services.BranchService;
 import com.tuigroup.tuihomework.services.RepositoryMapper;
 import com.tuigroup.tuihomework.services.RepositoryService;

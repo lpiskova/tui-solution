@@ -3,10 +3,10 @@ package com.tuigroup.tuihomework.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tuigroup.tuihomework.config.RestTemplateConfig;
-import com.tuigroup.tuihomework.model.Branch;
-import com.tuigroup.tuihomework.model.Commit;
-import com.tuigroup.tuihomework.model.Owner;
-import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.client.model.Branch;
+import com.tuigroup.tuihomework.client.model.Commit;
+import com.tuigroup.tuihomework.client.model.Owner;
+import com.tuigroup.tuihomework.client.model.Repository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +34,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class GithubClientTest {
 
     private static final int FROM_PAGE = 1;
-
-    @Value("${github.params.perPage}")
-    private int perPage;
+    private static final int PER_PAGE = 10;
 
     @Value("${github.url}")
     private String baseUrl;
@@ -57,7 +55,7 @@ public class GithubClientTest {
 
     private final String repoUrl = UriComponentsBuilder
             .fromUriString(GithubClient.USERS_USER_REPOS_URL)
-            .queryParam(GithubClient.PER_PAGE_REQUEST_PARAM, perPage)
+            .queryParam(GithubClient.PER_PAGE_REQUEST_PARAM, PER_PAGE)
             .queryParam(GithubClient.PAGE_REQUEST_PARAM, FROM_PAGE)
             .buildAndExpand(user)
             .toUriString();
@@ -81,7 +79,7 @@ public class GithubClientTest {
                 .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
-        List<Repository> result = githubClient.getUserRepositories(user, FROM_PAGE, perPage);
+        List<Repository> result = githubClient.getUserRepositories(user, FROM_PAGE, PER_PAGE);
         assertThat(result.size()).isEqualTo(1);
         assertEquals(repository.getName(), result.get(0).getName());
         assertEquals(repository.getOwner().getLogin(), result.get(0).getOwner().getLogin());
@@ -95,7 +93,7 @@ public class GithubClientTest {
                 .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withSuccess(payload, MediaType.APPLICATION_JSON));
 
-        List<Repository> result = githubClient.getUserRepositories(user, FROM_PAGE, perPage);
+        List<Repository> result = githubClient.getUserRepositories(user, FROM_PAGE, PER_PAGE);
         assertThat(result.size()).isEqualTo(0);
     }
 
@@ -105,7 +103,7 @@ public class GithubClientTest {
                 .andExpect(requestTo(baseUrl + repoUrl))
                 .andRespond(withResourceNotFound());
 
-        assertThrows(HttpClientErrorException.NotFound.class, () -> githubClient.getUserRepositories(user, FROM_PAGE, perPage));
+        assertThrows(HttpClientErrorException.NotFound.class, () -> githubClient.getUserRepositories(user, FROM_PAGE, PER_PAGE));
         server.verify();
     }
 

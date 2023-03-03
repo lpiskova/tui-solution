@@ -1,9 +1,9 @@
 package com.tuigroup.tuihomework.controllers;
 
-import com.tuigroup.tuihomework.model.Branch;
-import com.tuigroup.tuihomework.model.Commit;
-import com.tuigroup.tuihomework.model.Owner;
-import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.client.model.Branch;
+import com.tuigroup.tuihomework.client.model.Commit;
+import com.tuigroup.tuihomework.client.model.Owner;
+import com.tuigroup.tuihomework.client.model.Repository;
 import com.tuigroup.tuihomework.services.BranchService;
 import com.tuigroup.tuihomework.services.RepositoryMapper;
 import com.tuigroup.tuihomework.services.RepositoryService;

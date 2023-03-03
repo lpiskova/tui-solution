@@ -1,4 +1,4 @@
-package com.tuigroup.tuihomework.model;
+package com.tuigroup.tuihomework.client.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

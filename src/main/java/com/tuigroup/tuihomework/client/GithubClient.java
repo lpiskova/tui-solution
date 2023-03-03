@@ -1,7 +1,7 @@
 package com.tuigroup.tuihomework.client;
 
-import com.tuigroup.tuihomework.model.Branch;
-import com.tuigroup.tuihomework.model.Repository;
+import com.tuigroup.tuihomework.client.model.Branch;
+import com.tuigroup.tuihomework.client.model.Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,9 +73,9 @@ public class GithubClient {
     }
 
 
-    private String getNextPageUrl(HttpHeaders headers) {
+    private String getNextPageUrl(HttpHeaders currentPageHeaders) {
         try {
-            List<String> headerValues = headers.getValuesAsList(HEADER);
+            List<String> headerValues = currentPageHeaders.getValuesAsList(HEADER);
             headerValues.removeIf(headerValue -> !headerValue.contains(HEADER_NEXT_PAGE_INDICATOR));
             String nextPageLinkHeaderValue = headerValues.get(0).split(HEADER_VALUE_SEPARATOR)[0];
             String nextPageUrl = nextPageLinkHeaderValue.substring(1, nextPageLinkHeaderValue.length() - 1);
@@ -90,7 +92,7 @@ public class GithubClient {
             URL url = new URL(urlString);
             url.toURI();
             return true;
-        } catch (Exception e) {
+        } catch (URISyntaxException | MalformedURLException e) {
             return false;
         }
     }
