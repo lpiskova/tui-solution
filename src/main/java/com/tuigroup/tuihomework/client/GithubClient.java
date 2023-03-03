@@ -74,20 +74,22 @@ public class GithubClient {
 
 
     private String getNextPageUrl(HttpHeaders currentPageHeaders) {
-        try {
-            List<String> headerValues = currentPageHeaders.getValuesAsList(HEADER);
-            headerValues.removeIf(headerValue -> !headerValue.contains(HEADER_NEXT_PAGE_INDICATOR));
-            String nextPageLinkHeaderValue = headerValues.get(0).split(HEADER_VALUE_SEPARATOR)[0];
-            String nextPageUrl = nextPageLinkHeaderValue.substring(1, nextPageLinkHeaderValue.length() - 1);
-            if (isValidURL(nextPageUrl))
-                return nextPageUrl;
-        } catch (Exception e) {
-            return NO_URL;
-        }
-        return NO_URL;
+        return currentPageHeaders
+                .getValuesAsList(HEADER)
+                .stream()
+                .filter(headerValue -> headerValue.contains(HEADER_NEXT_PAGE_INDICATOR))
+                .findFirst()
+                .map(this::getNextPageUrlFromHeader)
+                .filter(this::isValidURL)
+                .orElse(NO_URL);
     }
 
-    private static boolean isValidURL(String urlString) {
+    private String getNextPageUrlFromHeader(String headerNextPage) {
+        String nextPageLinkHeaderValue = headerNextPage.split(HEADER_VALUE_SEPARATOR)[0];
+        return nextPageLinkHeaderValue.substring(1, nextPageLinkHeaderValue.length() - 1);
+    }
+
+    private boolean isValidURL(String urlString) {
         try {
             URL url = new URL(urlString);
             url.toURI();
